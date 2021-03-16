@@ -14,9 +14,9 @@
   limitations under the License.
 */
 
-use vade::Vade;
+use ye::Ye;
 
 #[test]
 fn library_can_be_created() {
-    let _vade = Vade::new();
+    let _ye = Ye::new();
 }

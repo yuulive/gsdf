@@ -15,7 +15,7 @@
 */
 
 use async_trait::async_trait;
-use vade::{Vade, VadePlugin, VadePluginResultValue};
+use ye::{Ye, YePlugin, YePluginResultValue};
 
 const EXAMPLE_DID_DOCUMENT_STR: &str = r###"{
     "@context": "https://www.w3.org/ns/did/v1",
@@ -37,15 +37,15 @@ impl Default for TestPlugin {
 }
 
 #[async_trait(?Send)]
-impl VadePlugin for TestPlugin {
+impl YePlugin for TestPlugin {
     // test plugin did_create handles this request
     async fn did_create(
         &mut self,
         _did_method: &str,
         _options: &str,
         _payload: &str,
-    ) -> Result<VadePluginResultValue<Option<String>>, Box<dyn std::error::Error>> {
-        Ok(VadePluginResultValue::Success(Some(
+    ) -> Result<YePluginResultValue<Option<String>>, Box<dyn std::error::Error>> {
+        Ok(YePluginResultValue::Success(Some(
             EXAMPLE_DID_DOCUMENT_STR.to_string(),
         )))
     }
@@ -54,8 +54,8 @@ impl VadePlugin for TestPlugin {
     async fn did_resolve(
         &mut self,
         _did: &str,
-    ) -> Result<VadePluginResultValue<Option<String>>, Box<dyn std::error::Error>> {
-        Ok(VadePluginResultValue::Ignored)
+    ) -> Result<YePluginResultValue<Option<String>>, Box<dyn std::error::Error>> {
+        Ok(YePluginResultValue::Ignored)
     }
 
     // test plugin did_update returns an error
@@ -64,17 +64,17 @@ impl VadePlugin for TestPlugin {
         _did: &str,
         _options: &str,
         _payload: &str,
-    ) -> Result<VadePluginResultValue<Option<String>>, Box<dyn std::error::Error>> {
+    ) -> Result<YePluginResultValue<Option<String>>, Box<dyn std::error::Error>> {
         Err(Box::from("yikes"))
     }
 }
 
 #[tokio::test]
-async fn vade_plugin_plugin_can_call_functions_implemented_in_plugin() {
+async fn ye_plugin_plugin_can_call_functions_implemented_in_plugin() {
     let mut tp: TestPlugin = TestPlugin::new();
     match tp.did_create("", "", "").await {
         Ok(response) => match response {
-            VadePluginResultValue::Success(result) => {
+            YePluginResultValue::Success(result) => {
                 assert_eq!(result.unwrap(), EXAMPLE_DID_DOCUMENT_STR.to_string())
             }
             _ => panic!("unexpected result"),
@@ -84,22 +84,22 @@ async fn vade_plugin_plugin_can_call_functions_implemented_in_plugin() {
 }
 
 #[tokio::test]
-async fn vade_plugin_plugin_can_call_fallback_for_not_implemented() {
+async fn ye_plugin_plugin_can_call_fallback_for_not_implemented() {
     let mut tp: TestPlugin = TestPlugin::new();
     match tp.vc_zkp_verify_proof("", "", "").await {
         Ok(response) => {
-            assert!(matches!(response, VadePluginResultValue::NotImplemented));
+            assert!(matches!(response, YePluginResultValue::NotImplemented));
         }
         Err(e) => panic!(format!("{}", e)),
     }
 }
 
 #[tokio::test]
-async fn vade_plugin_vade_can_call_functions_implemented_in_plugin() {
+async fn ye_plugin_ye_can_call_functions_implemented_in_plugin() {
     let tp: TestPlugin = TestPlugin::new();
-    let mut vade = Vade::new();
-    vade.register_plugin(Box::from(tp));
-    match vade.did_create("", "", "").await {
+    let mut ye = Ye::new();
+    ye.register_plugin(Box::from(tp));
+    match ye.did_create("", "", "").await {
         Ok(results) => {
             assert_eq!(
                 results[0].as_ref().unwrap().to_string(),

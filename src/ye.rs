@@ -14,7 +14,7 @@
   limitations under the License.
 */
 
-use crate::{VadePlugin, VadePluginResultValue};
+use crate::{YePlugin, YePluginResultValue};
 use futures::future::try_join_all;
 
 /// Calls `try_join_all` on given functions. Logs messages depending on given task name and
@@ -33,7 +33,7 @@ macro_rules! handle_results {
             Ok(responses) => {
                 let mut filtered_results = Vec::new();
                 for response in responses {
-                    if let VadePluginResultValue::Success(value) = response {
+                    if let YePluginResultValue::Success(value) = response {
                         filtered_results.push(value);
                     }
                 }
@@ -48,19 +48,19 @@ macro_rules! handle_results {
     };
 }
 
-/// A [`Vade`] instance is your single point of contact for interacting with DIDs and VCs.
-pub struct Vade {
+/// A [`Ye`] instance is your single point of contact for interacting with DIDs and VCs.
+pub struct Ye {
     /// registered plugins
-    pub plugins: Vec<Box<dyn VadePlugin>>,
+    pub plugins: Vec<Box<dyn YePlugin>>,
 }
 
-impl Vade {
-    /// Creates new Vade instance, vectors are initialized as empty.
+impl Ye {
+    /// Creates new Ye instance, vectors are initialized as empty.
     pub fn new() -> Self {
         match env_logger::try_init() {
             Ok(_) | Err(_) => (),
         };
-        Vade {
+        Ye {
             plugins: Vec::new(),
         }
     }
@@ -76,12 +76,12 @@ impl Vade {
     /// # Example
     ///
     /// ```
-    /// use vade::Vade;
+    /// use ye::Ye;
     /// async fn example() -> Result<(), Box<dyn std::error::Error>> {
-    ///     let mut vade = Vade::new();
+    ///     let mut ye = Ye::new();
     ///     // // register example plugin e.g. with
-    ///     // vade.register_plugin(example_plugin);
-    ///     let results = vade.did_create("did:example", "", "").await?;
+    ///     // ye.register_plugin(example_plugin);
+    ///     let results = ye.did_create("did:example", "", "").await?;
     ///     if !results.is_empty() {
     ///         println!("created new did: {}", results[0].as_ref().ok_or("result not found")?);
     ///     }
@@ -112,12 +112,12 @@ impl Vade {
     /// # Example
     ///
     /// ```
-    /// use vade::Vade;
+    /// use ye::Ye;
     /// async fn example() -> Result<(), Box<dyn std::error::Error>> {
-    ///     let mut vade = Vade::new();
+    ///     let mut ye = Ye::new();
     ///     // // register example plugin e.g. with
-    ///     // vade.register_plugin(example_plugin);
-    ///     let results = vade.did_resolve("did:example:123").await?;
+    ///     // ye.register_plugin(example_plugin);
+    ///     let results = ye.did_resolve("did:example:123").await?;
     ///     if !results.is_empty() {
     ///         println!("got did: {}", results[0].as_ref().ok_or("result not found")?);
     ///     }
@@ -148,12 +148,12 @@ impl Vade {
     /// # Example
     ///
     /// ```
-    /// use vade::Vade;
+    /// use ye::Ye;
     /// async fn example() -> Result<(), Box<dyn std::error::Error>> {
-    ///     let mut vade = Vade::new();
+    ///     let mut ye = Ye::new();
     ///     // // register example plugin e.g. with
-    ///     // vade.register_plugin(example_plugin);
-    ///     let results = vade.did_update("did:example", "", "").await?;
+    ///     // ye.register_plugin(example_plugin);
+    ///     let results = ye.did_update("did:example", "", "").await?;
     ///     if !results.is_empty() {
     ///         println!("did successfully updated: {}", results[0].as_ref().ok_or("result not found")?);
     ///     }
@@ -175,7 +175,7 @@ impl Vade {
         handle_results!(self, task_name, futures, did)
     }
 
-    /// Registers a new plugin. See [`VadePlugin`](https://docs.rs/vade/*/vade/struct.VadePlugin.html) for details about how they work.
+    /// Registers a new plugin. See [`YePlugin`](https://docs.rs/ye/*/ye/struct.YePlugin.html) for details about how they work.
     ///
     /// # Arguments
     ///
@@ -184,30 +184,30 @@ impl Vade {
     /// # Example
     ///
     /// ```
-    /// use vade::Vade;
+    /// use ye::Ye;
     /// // use some_crate::ExamplePlugin;
-    /// # use vade::VadePlugin;
+    /// # use ye::YePlugin;
     /// # struct ExamplePlugin { }
     /// # impl ExamplePlugin { pub fn new() -> Self { ExamplePlugin {} } }
-    /// # impl VadePlugin for ExamplePlugin {}
+    /// # impl YePlugin for ExamplePlugin {}
     /// async fn example() -> Result<(), Box<dyn std::error::Error>> {
-    ///     let mut vade = Vade::new();
+    ///     let mut ye = Ye::new();
     ///     let mut example_plugin = ExamplePlugin::new();
-    ///     vade.register_plugin(Box::from(example_plugin));
-    ///     let results = vade.did_create("did:example", "", "").await?;
+    ///     ye.register_plugin(Box::from(example_plugin));
+    ///     let results = ye.did_create("did:example", "", "").await?;
     ///     if !results.is_empty() {
     ///         println!("did successfully updated: {}", results[0].as_ref().ok_or("result not found")?);
     ///     }
     ///     Ok(())
     /// }
     /// ```
-    pub fn register_plugin(&mut self, plugin: Box<dyn VadePlugin>) {
-        debug!("registering new vade plugin");
+    pub fn register_plugin(&mut self, plugin: Box<dyn YePlugin>) {
+        debug!("registering new ye plugin");
         self.plugins.push(plugin);
     }
 
-    /// Runs a custom function, this allows to use `Vade`s API for custom calls, that do not belong
-    /// to `Vade`s core functionality but may be required for a projects use cases.
+    /// Runs a custom function, this allows to use `Ye`s API for custom calls, that do not belong
+    /// to `Ye`s core functionality but may be required for a projects use cases.
     ///
     /// # Arguments
     ///
@@ -219,12 +219,12 @@ impl Vade {
     /// # Example
     ///
     /// ```
-    /// use vade::Vade;
+    /// use ye::Ye;
     /// async fn example() -> Result<(), Box<dyn std::error::Error>> {
-    ///     let mut vade = Vade::new();
+    ///     let mut ye = Ye::new();
     ///     // // register example plugin e.g. with
-    ///     // vade.register_plugin(example_plugin);
-    ///     let results = vade.run_custom_function("did:example", "test connection", "", "").await?;
+    ///     // ye.register_plugin(example_plugin);
+    ///     let results = ye.run_custom_function("did:example", "test connection", "", "").await?;
     ///     if !results.is_empty() {
     ///         println!("connection status is: {}", results[0].as_ref().ok_or("result not found")?);
     ///     }
@@ -260,12 +260,12 @@ impl Vade {
     /// # Example
     ///
     /// ```
-    /// use vade::Vade;
+    /// use ye::Ye;
     /// async fn example() -> Result<(), Box<dyn std::error::Error>> {
-    ///     let mut vade = Vade::new();
+    ///     let mut ye = Ye::new();
     ///     // // register example plugin e.g. with
-    ///     // vade.register_plugin(example_plugin);
-    ///     let results = vade.vc_zkp_create_credential_definition("did:example", "", "").await?;
+    ///     // ye.register_plugin(example_plugin);
+    ///     let results = ye.vc_zkp_create_credential_definition("did:example", "", "").await?;
     ///     if !results.is_empty() {
     ///         println!("created a credential definition: {}", results[0].as_ref().ok_or("result not found")?);
     ///     }
@@ -298,12 +298,12 @@ impl Vade {
     /// # Example
     ///
     /// ```
-    /// use vade::Vade;
+    /// use ye::Ye;
     /// async fn example() -> Result<(), Box<dyn std::error::Error>> {
-    ///     let mut vade = Vade::new();
+    ///     let mut ye = Ye::new();
     ///     // // register example plugin e.g. with
-    ///     // vade.register_plugin(example_plugin);
-    ///     let results = vade.vc_zkp_create_credential_offer("did:example", "", "").await?;
+    ///     // ye.register_plugin(example_plugin);
+    ///     let results = ye.vc_zkp_create_credential_offer("did:example", "", "").await?;
     ///     if !results.is_empty() {
     ///         println!("created a credential offer: {}", results[0].as_ref().ok_or("result not found")?);
     ///     }
@@ -337,12 +337,12 @@ impl Vade {
     /// # Example
     ///
     /// ```
-    /// use vade::Vade;
+    /// use ye::Ye;
     /// async fn example() -> Result<(), Box<dyn std::error::Error>> {
-    ///     let mut vade = Vade::new();
+    ///     let mut ye = Ye::new();
     ///     // // register example plugin e.g. with
-    ///     // vade.register_plugin(example_plugin);
-    ///     let results = vade.vc_zkp_create_credential_proposal("did:example", "", "").await?;
+    ///     // ye.register_plugin(example_plugin);
+    ///     let results = ye.vc_zkp_create_credential_proposal("did:example", "", "").await?;
     ///     if !results.is_empty() {
     ///         println!("created a credential proposal: {}", results[0].as_ref().ok_or("result not found")?);
     ///     }
@@ -376,12 +376,12 @@ impl Vade {
     /// # Example
     ///
     /// ```
-    /// use vade::Vade;
+    /// use ye::Ye;
     /// async fn example() -> Result<(), Box<dyn std::error::Error>> {
-    ///     let mut vade = Vade::new();
+    ///     let mut ye = Ye::new();
     ///     // // register example plugin e.g. with
-    ///     // vade.register_plugin(example_plugin);
-    ///     let results = vade.vc_zkp_create_credential_schema("did:example", "", "").await?;
+    ///     // ye.register_plugin(example_plugin);
+    ///     let results = ye.vc_zkp_create_credential_schema("did:example", "", "").await?;
     ///     if !results.is_empty() {
     ///         println!("created a credential schema: {}", results[0].as_ref().ok_or("result not found")?);
     ///     }
@@ -416,12 +416,12 @@ impl Vade {
     /// # Example
     ///
     /// ```
-    /// use vade::Vade;
+    /// use ye::Ye;
     /// async fn example() -> Result<(), Box<dyn std::error::Error>> {
-    ///     let mut vade = Vade::new();
+    ///     let mut ye = Ye::new();
     ///     // // register example plugin e.g. with
-    ///     // vade.register_plugin(example_plugin);
-    ///     let results = vade.vc_zkp_create_revocation_registry_definition("did:example", "", "").await?;
+    ///     // ye.register_plugin(example_plugin);
+    ///     let results = ye.vc_zkp_create_revocation_registry_definition("did:example", "", "").await?;
     ///     if !results.is_empty() {
     ///         println!("created a revocation registry definition: {}", results[0].as_ref().ok_or("result not found")?);
     ///     }
@@ -457,12 +457,12 @@ impl Vade {
     /// # Example
     ///
     /// ```
-    /// use vade::Vade;
+    /// use ye::Ye;
     /// async fn example() -> Result<(), Box<dyn std::error::Error>> {
-    ///     let mut vade = Vade::new();
+    ///     let mut ye = Ye::new();
     ///     // // register example plugin e.g. with
-    ///     // vade.register_plugin(example_plugin);
-    ///     let results = vade.vc_zkp_update_revocation_registry("did:example", "", "").await?;
+    ///     // ye.register_plugin(example_plugin);
+    ///     let results = ye.vc_zkp_update_revocation_registry("did:example", "", "").await?;
     ///     if !results.is_empty() {
     ///         println!("updated revocation registry: {}", results[0].as_ref().ok_or("result not found")?);
     ///     }
@@ -496,12 +496,12 @@ impl Vade {
     /// # Example
     ///
     /// ```
-    /// use vade::Vade;
+    /// use ye::Ye;
     /// async fn example() -> Result<(), Box<dyn std::error::Error>> {
-    ///     let mut vade = Vade::new();
+    ///     let mut ye = Ye::new();
     ///     // // register example plugin e.g. with
-    ///     // vade.register_plugin(example_plugin);
-    ///     let results = vade.vc_zkp_issue_credential("did:example", "", "").await?;
+    ///     // ye.register_plugin(example_plugin);
+    ///     let results = ye.vc_zkp_issue_credential("did:example", "", "").await?;
     ///     if !results.is_empty() {
     ///         println!("issued credential: {}", results[0].as_ref().ok_or("result not found")?);
     ///     }
@@ -535,12 +535,12 @@ impl Vade {
     /// # Example
     ///
     /// ```
-    /// use vade::Vade;
+    /// use ye::Ye;
     /// async fn example() -> Result<(), Box<dyn std::error::Error>> {
-    ///     let mut vade = Vade::new();
+    ///     let mut ye = Ye::new();
     ///     // // register example plugin e.g. with
-    ///     // vade.register_plugin(example_plugin);
-    ///     let results = vade.vc_zkp_present_proof("did:example", "", "").await?;
+    ///     // ye.register_plugin(example_plugin);
+    ///     let results = ye.vc_zkp_present_proof("did:example", "", "").await?;
     ///     if !results.is_empty() {
     ///         println!("created a proof presentation: {}", results[0].as_ref().ok_or("result not found")?);
     ///     }
@@ -573,12 +573,12 @@ impl Vade {
     /// # Example
     ///
     /// ```
-    /// use vade::Vade;
+    /// use ye::Ye;
     /// async fn example() -> Result<(), Box<dyn std::error::Error>> {
-    ///     let mut vade = Vade::new();
+    ///     let mut ye = Ye::new();
     ///     // // register example plugin e.g. with
-    ///     // vade.register_plugin(example_plugin);
-    ///     let results = vade.vc_zkp_request_credential("did:example", "", "").await?;
+    ///     // ye.register_plugin(example_plugin);
+    ///     let results = ye.vc_zkp_request_credential("did:example", "", "").await?;
     ///     if !results.is_empty() {
     ///         println!("created credential request: {}", results[0].as_ref().ok_or("result not found")?);
     ///     }
@@ -611,12 +611,12 @@ impl Vade {
     /// # Example
     ///
     /// ```
-    /// use vade::Vade;
+    /// use ye::Ye;
     /// async fn example() -> Result<(), Box<dyn std::error::Error>> {
-    ///     let mut vade = Vade::new();
+    ///     let mut ye = Ye::new();
     ///     // // register example plugin e.g. with
-    ///     // vade.register_plugin(example_plugin);
-    ///     let results = vade.vc_zkp_request_proof("did:example", "", "").await?;
+    ///     // ye.register_plugin(example_plugin);
+    ///     let results = ye.vc_zkp_request_proof("did:example", "", "").await?;
     ///     if !results.is_empty() {
     ///         println!("created proof request: {}", results[0].as_ref().ok_or("result not found")?);
     ///     }
@@ -650,12 +650,12 @@ impl Vade {
     /// # Example
     ///
     /// ```
-    /// use vade::Vade;
+    /// use ye::Ye;
     /// async fn example() -> Result<(), Box<dyn std::error::Error>> {
-    ///     let mut vade = Vade::new();
+    ///     let mut ye = Ye::new();
     ///     // // register example plugin e.g. with
-    ///     // vade.register_plugin(example_plugin);
-    ///     let results = vade.vc_zkp_revoke_credential("did:example", "", "").await?;
+    ///     // ye.register_plugin(example_plugin);
+    ///     let results = ye.vc_zkp_revoke_credential("did:example", "", "").await?;
     ///     if !results.is_empty() {
     ///         println!("revoked credential: {}", results[0].as_ref().ok_or("result not found")?);
     ///     }
@@ -688,12 +688,12 @@ impl Vade {
     /// # Example
     ///
     /// ```
-    /// use vade::Vade;
+    /// use ye::Ye;
     /// async fn example() -> Result<(), Box<dyn std::error::Error>> {
-    ///     let mut vade = Vade::new();
+    ///     let mut ye = Ye::new();
     ///     // // register example plugin e.g. with
-    ///     // vade.register_plugin(example_plugin);
-    ///     let results = vade.vc_zkp_verify_proof("did:example", "", "").await?;
+    ///     // ye.register_plugin(example_plugin);
+    ///     let results = ye.vc_zkp_verify_proof("did:example", "", "").await?;
     ///     if !results.is_empty() {
     ///         println!("verified proof: {}", results[0].as_ref().ok_or("result not found")?);
     ///     }
@@ -734,7 +734,7 @@ impl Vade {
     /// # Arguments
     ///
     /// * `name` - name of called function
-    /// * `response_count` - number of `VadePluginResultValue::Success(T)` responses
+    /// * `response_count` - number of `YePluginResultValue::Success(T)` responses
     fn log_fun_leave(&mut self, name: &str, response_count: usize, method_or_id: &str) {
         debug!(
             r#"function "{}" of {} plugins yielded {} results for method/id "{}""#,
@@ -746,9 +746,9 @@ impl Vade {
     }
 }
 
-impl Default for Vade {
-    /// Default `Vade` instance
+impl Default for Ye {
+    /// Default `Ye` instance
     fn default() -> Self {
-        Vade::new()
+        Ye::new()
     }
 }

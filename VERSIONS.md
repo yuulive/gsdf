@@ -1,4 +1,4 @@
-# vade
+# ye
 
 ## Next Version
 
@@ -22,15 +22,15 @@
 
 ### Features
 
-- add `VadePlugin` trait
-- add `VadePluginResultValue` enum
-- update `Vade` to be able to work with `VadePlugins`
+- add `YePlugin` trait
+- add `YePluginResultValue` enum
+- update `Ye` to be able to work with `YePlugins`
 
 ### Deprecations
 
 - remove `DidResolver`, `Logger`, `VcResolver`, `MessageHandler`
   - traits
-  - `Vade` functions that use them
+  - `Ye` functions that use them
   - tests related to them
 - remove `RustStorageCache` example implementation and tests
 

@@ -1,14 +1,13 @@
 [package]
-name = "vade"
+name = "ye"
 version = "0.0.8"
 authors = ["evan GmbH"]
 edition = "2018"
 license = "Apache-2.0"
-license-file = "LICENSE.txt"
-description = "VC and DID engine"
-homepage = "https://github.com/evannetwork/vade"
-documentation = "https://docs.rs/crate/vade"
-repository = "https://github.com/evannetwork/vade"
+description = "YE VC and DID engine"
+homepage = "https://github.com/yuulive/ye"
+documentation = "https://docs.rs/crate/ye"
+repository = "https://github.com/yuulive/ye"
 readme = "README.md"
 keywords = ["did", "ssi", "vc"]
 
